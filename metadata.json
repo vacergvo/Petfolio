@@ -1,0 +1,5 @@
+{
+  "name": "LPS Collector",
+  "description": "A cute and stylish checklist app for tracking your Littlest Pet Shop collection, featuring generation filtering, progress tracking, and cloud sync.",
+  "requestFramePermissions": []
+}
