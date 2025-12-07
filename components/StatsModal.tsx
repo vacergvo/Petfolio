@@ -1,114 +1,116 @@
-import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { Pet, ChecklistState } from '../types';
+import React, { useMemo } from 'react';
+import { Pet } from '../types';
+import { X, Trophy, PieChart } from 'lucide-react';
 
 interface StatsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   pets: Pet[];
-  checklist: ChecklistState;
+  checklist: Record<string, boolean>;
+  onClose: () => void;
 }
 
-interface GenStat {
+interface StatData {
   total: number;
   collected: number;
 }
 
-// Updated Lilac Theme Colors
-const COLORS = ['#C084FC', '#A855F7', '#F472B6', '#818CF8', '#2DD4BF', '#FBBF24'];
+const StatsModal: React.FC<StatsModalProps> = ({ pets, checklist, onClose }) => {
+  
+  const stats = useMemo(() => {
+    const genStats: Record<string, StatData> = {};
+    const nameStats: Record<string, StatData> = {};
 
-export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose, pets, checklist }) => {
-  if (!isOpen) return null;
+    pets.forEach(pet => {
+      const isCollected = !!checklist[pet.id];
+      
+      // Generation Stats
+      if (!genStats[pet.generation]) genStats[pet.generation] = { total: 0, collected: 0 };
+      genStats[pet.generation].total++;
+      if (isCollected) genStats[pet.generation].collected++;
 
-  // Calculate stats by generation
-  const statsByGen = pets.reduce((acc, pet) => {
-    const gen = pet.generation || 'Unknown';
-    if (!acc[gen]) acc[gen] = { total: 0, collected: 0 };
-    acc[gen].total++;
-    if (checklist[pet.id]) acc[gen].collected++;
-    return acc;
-  }, {} as Record<string, GenStat>);
+      // Name Stats
+      if (!nameStats[pet.name]) nameStats[pet.name] = { total: 0, collected: 0 };
+      nameStats[pet.name].total++;
+      if (isCollected) nameStats[pet.name].collected++;
+    });
 
-  const data = Object.entries(statsByGen).map(([name, stat]: [string, GenStat]) => ({
-    name,
-    value: stat.collected,
-    total: stat.total
-  })).filter(d => d.value > 0);
+    return { genStats, nameStats };
+  }, [pets, checklist]);
 
-  const totalCollected = pets.filter(p => checklist[p.id]).length;
-  const percentage = Math.round((totalCollected / pets.length) * 100) || 0;
+  const renderProgressBar = (collected: number, total: number, colorClass: string) => {
+    const percent = Math.round((collected / total) * 100) || 0;
+    return (
+      <div className="w-full">
+        <div className="flex justify-between text-xs mb-1 text-slate-600 dark:text-slate-400">
+          <span className="font-medium">{percent}%</span>
+          <span>{collected}/{total}</span>
+        </div>
+        <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+          <div 
+            className={`h-full rounded-full transition-all duration-500 ${colorClass}`}
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lilac-900/20 backdrop-blur-md">
-      <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 shadow-2xl shadow-lilac-900/10 relative animate-in fade-in zoom-in duration-300 border border-lilac-100">
-        <button 
-          onClick={onClose}
-          className="absolute top-5 right-5 w-10 h-10 flex items-center justify-center rounded-full bg-lilac-50 text-lilac-400 hover:bg-lilac-100 hover:text-lilac-600 transition-colors"
-        >
-          ✕
-        </button>
-
-        <h2 className="text-3xl font-display font-extrabold text-lilac-900 text-center mb-1">Collection Stats</h2>
-        <p className="text-center text-lilac-400 font-medium mb-6">Your collecting journey</p>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+      <div className="bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
         
-        <div className="text-center mb-8 relative">
-          <div className="inline-block relative">
-             <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-lilac-500 to-pop-pink drop-shadow-sm">
-              {percentage}%
+        {/* Header */}
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-gradient-to-r from-lilac-50 to-white dark:from-slate-800 dark:to-slate-900">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-lilac-100 text-lilac-600 rounded-xl">
+              <PieChart size={24} />
             </div>
-            {percentage === 100 && <div className="absolute -top-4 -right-8 text-4xl animate-bounce">👑</div>}
+            <h2 className="text-xl font-bold text-slate-800 dark:text-lilac-100">Collection Statistics</h2>
           </div>
-          <p className="text-lilac-500 font-medium mt-1">{totalCollected} of {pets.length} Collected</p>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500">
+            <X size={20} />
+          </button>
         </div>
 
-        <div className="h-64 w-full">
-          {data.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={data}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                  cornerRadius={6}
-                >
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(168, 85, 247, 0.15)', backgroundColor: '#fff', padding: '12px' }}
-                  itemStyle={{ color: '#6B21A8', fontWeight: 700 }}
-                />
-                <Legend iconType="circle" />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-lilac-300">
-              <span className="text-4xl mb-2">🐚</span>
-              <span>Start checking pets to see stats!</span>
+        {/* Content */}
+        <div className="overflow-y-auto p-6 space-y-8 custom-scrollbar">
+          
+          {/* Generations Section */}
+          <section>
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-700 dark:text-slate-200">
+              <Trophy size={18} className="text-yellow-500" />
+              By Generation
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {(Object.entries(stats.genStats) as [string, StatData][]).sort().map(([gen, data]) => (
+                <div key={gen} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                  <div className="font-bold text-lilac-600 mb-2">{gen}</div>
+                  {renderProgressBar(data.collected, data.total, 'bg-gradient-to-r from-lilac-400 to-lilac-600')}
+                </div>
+              ))}
             </div>
-          )}
-        </div>
+          </section>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-8">
-          {Object.entries(statsByGen).map(([gen, stat]: [string, GenStat]) => (
-            <div key={gen} className="bg-lilac-50 p-3 rounded-2xl text-center border border-lilac-100">
-              <div className="text-[10px] font-bold text-lilac-400 uppercase tracking-wider">{gen}</div>
-              <div className="font-bold text-lilac-800 text-sm mt-1">{stat.collected} / {stat.total}</div>
-              <div className="w-full bg-lilac-200 h-1.5 rounded-full mt-2 overflow-hidden">
-                <div 
-                  className="h-full bg-lilac-500 rounded-full transition-all duration-1000" 
-                  style={{ width: `${(stat.collected / stat.total) * 100}%` }}
-                />
-              </div>
+          {/* Animals Section */}
+          <section>
+            <h3 className="text-lg font-semibold mb-4 text-slate-700 dark:text-slate-200">
+              By Animal Type
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {(Object.entries(stats.nameStats) as [string, StatData][])
+                .sort((a, b) => b[1].total - a[1].total) // Sort by most items first
+                .map(([name, data]) => (
+                  <div key={name} className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800 hover:shadow-md transition-shadow">
+                    <div className="font-medium text-sm text-slate-700 dark:text-slate-300 truncate mb-2" title={name}>{name}</div>
+                    {renderProgressBar(data.collected, data.total, 'bg-gradient-to-r from-pink-400 to-pink-600')}
+                  </div>
+              ))}
             </div>
-          ))}
+          </section>
+
         </div>
       </div>
     </div>
   );
 };
+
+export default StatsModal;

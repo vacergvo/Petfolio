@@ -1,77 +1,73 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Pet } from '../types';
+import { Heart, Check } from 'lucide-react';
 
 interface PetCardProps {
   pet: Pet;
   isChecked: boolean;
-  onToggle: (id: string, checked: boolean) => void;
+  onToggle: (id: string) => void;
 }
 
-export const PetCard: React.FC<PetCardProps> = ({ pet, isChecked, onToggle }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
+const PetCard: React.FC<PetCardProps> = ({ pet, isChecked, onToggle }) => {
+  // Placeholder image if actual image fails or isn't available
+  const displayImage = pet.image ? `images/${pet.image}` : `https://picsum.photos/200`;
 
   return (
     <div 
+      onClick={() => onToggle(pet.id)}
       className={`
-        group relative flex flex-col items-center p-3 rounded-[2rem] transition-all duration-300 cursor-pointer ease-out
+        relative group cursor-pointer 
+        rounded-2xl overflow-hidden 
+        transition-all duration-300 ease-in-out
+        border-2 
         ${isChecked 
-          ? 'bg-white shadow-[0_10px_30px_rgba(192,132,252,0.3)] border-2 border-lilac-400 transform scale-[1.02] hover:scale-[1.04]' 
-          : 'bg-white shadow-sm border-2 border-transparent hover:shadow-xl hover:shadow-lilac-200/50 hover:border-lilac-100 hover:scale-[1.03] hover:-translate-y-1'
+          ? 'bg-lilac-100 border-lilac-400 shadow-[0_0_20px_rgba(178,90,255,0.3)] dark:bg-purple-900/30 dark:border-lilac-500' 
+          : 'bg-white border-transparent hover:border-lilac-200 shadow-md hover:shadow-xl hover:-translate-y-1 dark:bg-slate-800'
         }
       `}
-      onClick={() => onToggle(pet.id, !isChecked)}
     >
-      <div className="relative w-full aspect-square mb-3 bg-lilac-50 rounded-[1.5rem] overflow-hidden">
-        {!imageLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center text-lilac-300 opacity-50">
-            <span className="text-3xl animate-pulse">✨</span>
-          </div>
-        )}
-        <img
-          src={`images/${pet.image}`}
-          alt={pet.name}
-          className={`
-            w-full h-full object-contain transition-all duration-500 p-2
-            ${imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}
-          `}
-          onLoad={() => setImageLoaded(true)}
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://picsum.photos/150/150?blur=2';
-            setImageLoaded(true);
-          }}
-        />
-        
-        {/* Toggle Button Overlay */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(pet.id, !isChecked);
-          }}
-          className={`
-            absolute top-2 right-2 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm
-            ${isChecked 
-              ? 'bg-lilac-500 text-white scale-110 shadow-lilac-500/40 hover:scale-125' 
-              : 'bg-white/90 backdrop-blur text-lilac-200 hover:bg-white hover:text-lilac-400 hover:scale-110'
-            }
-          `}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-          </svg>
-        </button>
+      {/* Selection Indicator Overlay */}
+      <div className={`absolute top-2 right-2 z-10 transition-transform duration-300 ${isChecked ? 'scale-100' : 'scale-0'}`}>
+        <div className="bg-gradient-to-r from-lilac-500 to-pink-500 rounded-full p-1.5 shadow-lg">
+          <Check className="w-4 h-4 text-white" strokeWidth={3} />
+        </div>
       </div>
 
-      <div className="text-center w-full px-1">
-        <div className="text-[10px] font-extrabold text-lilac-400 uppercase tracking-widest mb-1">
-          {pet.id.replace('LPS-', '#')}
-        </div>
-        <h3 className="font-display font-bold text-lilac-900 text-sm md:text-base leading-tight truncate w-full" title={pet.name}>
-          {pet.name}
-        </h3>
-        <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold bg-lilac-100 text-lilac-600 group-hover:bg-lilac-200 transition-colors">
-          {pet.generation}
+      <div className="aspect-square p-4 flex items-center justify-center bg-gradient-to-b from-transparent to-lilac-50/50 dark:to-purple-900/20">
+        <img 
+          src={displayImage} 
+          alt={pet.name}
+          className={`
+            w-full h-full object-contain drop-shadow-sm transition-transform duration-300
+            ${isChecked ? 'scale-90 opacity-100' : 'group-hover:scale-110 opacity-90 group-hover:opacity-100'}
+          `}
+          loading="lazy"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=No+Image';
+          }}
+        />
+      </div>
+
+      <div className="p-3 text-center relative overflow-hidden">
+        {/* Background gradient on check */}
+        <div className={`absolute inset-0 bg-gradient-to-r from-lilac-100 to-pink-100 dark:from-purple-900 dark:to-fuchsia-900 transition-opacity duration-300 ${isChecked ? 'opacity-100' : 'opacity-0'}`} />
+        
+        <div className="relative z-10">
+          <div className="text-xs font-bold tracking-wider text-lilac-600 dark:text-lilac-300 uppercase mb-1">
+            {pet.id.replace('LPS-', '#')}
+          </div>
+          <h3 className="font-semibold text-slate-700 dark:text-slate-200 truncate px-1 text-sm md:text-base leading-tight">
+            {pet.name}
+          </h3>
+          <div className="mt-1">
+             <span className="inline-block px-2 py-0.5 text-[10px] rounded-full bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 font-medium">
+               {pet.generation}
+             </span>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
+export default PetCard;

@@ -5,16 +5,8 @@ export interface Pet {
   image: string;
 }
 
-export interface ChecklistState {
-  [petId: string]: boolean;
-}
+export type FilterStatus = 'all' | 'checked' | 'unchecked';
 
-export interface UserData {
-  checklistState: ChecklistState;
-}
-
-export enum FilterStatus {
-  ALL = 'all',
-  CHECKED = 'checked',
-  UNCHECKED = 'unchecked'
+export interface UserState {
+  checklist: Record<string, boolean>;
 }

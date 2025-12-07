@@ -3,42 +3,55 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>LPS Collector</title>
+    <title>LPS Collector Checklist</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Nunito', 'sans-serif'],
-              display: ['Quicksand', 'sans-serif'],
+              sans: ['Quicksand', 'sans-serif'],
             },
             colors: {
               lilac: {
-                50: '#FAF5FF',  // lps-bg equivalent
-                100: '#F3E8FF',
-                200: '#E9D5FF',
-                300: '#D8B4FE',
-                400: '#C084FC', // primary bright
-                500: '#A855F7',
-                600: '#9333EA', // primary action
-                700: '#7E22CE', // text dark
-                800: '#6B21A8',
-                900: '#581C87',
+                50: '#fbf7ff',
+                100: '#f5eeff',
+                200: '#ebd9ff',
+                300: '#dcb4ff',
+                400: '#c886ff',
+                500: '#b25aff',
+                600: '#9d36fa',
+                700: '#8822dd',
+                800: '#721eb2',
+                900: '#5e1b8f',
+                950: '#3d0866',
               },
-              pop: {
-                pink: '#F472B6',
-                teal: '#2DD4BF'
-              }
             },
             animation: {
-              'float': 'float 6s ease-in-out infinite',
+              'float': 'float 3s ease-in-out infinite',
+              'fade-in': 'fadeIn 0.5s ease-out forwards',
+              'gradient-xy': 'gradient-xy 15s ease infinite',
             },
             keyframes: {
               float: {
                 '0%, 100%': { transform: 'translateY(0)' },
-                '50%': { transform: 'translateY(-10px)' },
+                '50%': { transform: 'translateY(-5px)' },
+              },
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              'gradient-xy': {
+                '0%, 100%': {
+                    'background-size': '400% 400%',
+                    'background-position': '0% 50%'
+                },
+                '50%': {
+                    'background-size': '200% 200%',
+                    'background-position': '100% 50%'
+                }
               }
             }
           }
@@ -46,39 +59,70 @@
       }
     </script>
     <style>
-      body {
-        background-color: #FAF5FF;
-        color: #581C87;
-      }
-      /* Custom scrollbar */
+      /* Custom Scrollbar */
       ::-webkit-scrollbar {
         width: 8px;
       }
       ::-webkit-scrollbar-track {
-        background: #FAF5FF; 
+        background: #f5eeff; 
       }
       ::-webkit-scrollbar-thumb {
-        background: #D8B4FE; 
+        background: #dcb4ff; 
         border-radius: 4px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #C084FC; 
+        background: #c886ff; 
+      }
+      .glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+      .dark .glass {
+        background: rgba(30, 20, 40, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+      .dark .glass-card {
+        background: rgba(30, 30, 40, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.5);
+        border-radius: 20px;
       }
     </style>
   <script type="importmap">
 {
   "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.1/client",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.1",
     "react": "https://aistudiocdn.com/react@^19.2.1",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
-    "recharts": "https://aistudiocdn.com/recharts@^3.5.1"
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/"
   }
 }
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body>
+  <body class="bg-lilac-50 text-slate-800 dark:bg-slate-900 dark:text-lilac-100 transition-colors duration-300 min-h-screen">
     <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

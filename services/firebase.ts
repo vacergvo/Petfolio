@@ -2,7 +2,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// Configuration from the user's provided snippet
 const firebaseConfig = {
   apiKey: "AIzaSyC7qrHuULs_dzP-WlN62G3nMVcqegQMnZo",
   authDomain: "lps-checklist.firebaseapp.com",
